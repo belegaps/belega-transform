@@ -1,5 +1,9 @@
 package dk.belega.transform;
 
+import dk.belega.transform.resolver.*;
+
+import javax.xml.transform.*;
+import javax.xml.transform.stream.*;
 import java.io.*;
 
 /**
@@ -17,6 +21,12 @@ public class Process {
     // Data
 
     private PrintWriter out;
+
+    private URIResolver fileResolver =
+            new FileSystemResolver();
+
+    private URIResolver stylesheetResolver =
+            new FileSystemResolver();
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Application entry point
@@ -38,9 +48,33 @@ public class Process {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
+    // Properties
+
+    void setFileResolver(URIResolver resolver) {
+        this.fileResolver = resolver;
+    }
+
+    void setStylesheetResolver(URIResolver resolver) {
+        this.stylesheetResolver = resolver;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
     // Operations
 
     void run(@SuppressWarnings("unused") String[] args) {
-        out.println(USAGE_MESSAGE);
+        if (0 == args.length)
+            out.println(USAGE_MESSAGE);
+        else {
+            try {
+                final Source stylesheet = stylesheetResolver.resolve(args[0], null);
+                final Source input = fileResolver.resolve(args[1], null);
+                final StreamResult output = new StreamResult(out);
+
+                final Transformer transformer = TransformerFactory.newInstance().newTransformer(stylesheet);
+                transformer.transform(input, output);
+            } catch (TransformerException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

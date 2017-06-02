@@ -2,6 +2,8 @@ package dk.belega.transform;
 
 import org.junit.*;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * Helper class for expectations
  */
@@ -24,6 +26,12 @@ class Expect {
                 throw new ComparisonFailure("string prefix differ",
                         prefix, value.substring(0, Math.min(value.length(), prefix.length())));
             }
+            return this;
+        }
+
+        @SuppressWarnings("UnusedReturnValue")
+        StringExpector equalTo(String expected) {
+            assertEquals(expected, value);
             return this;
         }
     }
