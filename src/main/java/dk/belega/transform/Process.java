@@ -95,6 +95,7 @@ public class Process {
                 transformerFactory.setURIResolver(stylesheetResolver);
 
                 final Transformer transformer = transformerFactory.newTransformer(stylesheet);
+                transformer.setURIResolver(fileResolver);
 
                 for (Map.Entry<String, String> parameter : parameters.entrySet())
                     transformer.setParameter(parameter.getKey(), parameter.getValue());

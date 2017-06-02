@@ -108,6 +108,25 @@ public class ProcessTest {
                 .equalTo(EXPECTED_VALUE);
     }
 
+    @Test
+    public void testIncludedDocument() {
+
+        final String EXPECTED_RESULT = "Document Title";
+
+        // When a stylesheet includes a document
+        process.run(new String[] {
+                "--param",
+                "document-name",
+                "title-file.xml",
+                "document.xsl",
+                "simple.xml"
+        });
+
+        // Then the document is loaded from the file resolver
+        expect(out.toString())
+                .equalTo(EXPECTED_RESULT);
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Implementation
 
