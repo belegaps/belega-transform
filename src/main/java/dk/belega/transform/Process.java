@@ -91,7 +91,10 @@ public class Process {
                 final Source input = fileResolver.resolve(args[i+1], null);
                 final StreamResult output = new StreamResult(out);
 
-                final Transformer transformer = TransformerFactory.newInstance().newTransformer(stylesheet);
+                final TransformerFactory transformerFactory = TransformerFactory.newInstance();
+                transformerFactory.setURIResolver(stylesheetResolver);
+
+                final Transformer transformer = transformerFactory.newTransformer(stylesheet);
 
                 for (Map.Entry<String, String> parameter : parameters.entrySet())
                     transformer.setParameter(parameter.getKey(), parameter.getValue());

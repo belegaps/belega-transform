@@ -89,6 +89,24 @@ public class ProcessTest {
                 .equalTo(EXPECTED_VALUE + OTHER_VALUE);
     }
 
+    @Test
+    public void testIncludedStylesheet() {
+
+        final String EXPECTED_VALUE = "expected-value";
+
+        // When an included stylesheet outputs the value of a parameter
+        process.run(new String[] {
+                "--param",
+                "expected-param",
+                EXPECTED_VALUE,
+                "include.xsl",
+                "simple.xml"
+        });
+
+        // Then the result equals the parameter value
+        expect(out.toString())
+                .equalTo(EXPECTED_VALUE);
+    }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Implementation
