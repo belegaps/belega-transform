@@ -5,6 +5,7 @@ import dk.belega.transform.resolver.*;
 import javax.xml.transform.*;
 import javax.xml.transform.stream.*;
 import java.io.*;
+import java.util.*;
 
 /**
  * Application entry point for XSLT processor
@@ -15,7 +16,13 @@ public class Process {
     // Types, constants
 
     private static final String USAGE_MESSAGE =
-            "Usage: transform [options] <stylesheet> <file>...";
+            "Usage: transform [options] <stylesheet> <file>...\n" +
+                    "\n" +
+                    "Options\n" +
+                    "\n" +
+                    "    -p name value\n" +
+                    "    --param name value\n" +
+                    "        Adds a string parameter for the XSLT processor";
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Data
@@ -61,16 +68,34 @@ public class Process {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Operations
 
-    void run(@SuppressWarnings("unused") String[] args) {
+    void run(String[] args) {
+
         if (0 == args.length)
             out.println(USAGE_MESSAGE);
         else {
+            Map<String,String> parameters = new HashMap<>();
+
+            int i = 0;
+            for (; args[i].startsWith("-"); ++i) {
+                switch (args[i]) {
+                    case "-p":
+                    case "--param":
+                        parameters.put(args[i + 1], args[i + 2]);
+                        i += 2;
+                        break;
+                }
+            }
+
             try {
-                final Source stylesheet = stylesheetResolver.resolve(args[0], null);
-                final Source input = fileResolver.resolve(args[1], null);
+                final Source stylesheet = stylesheetResolver.resolve(args[i], null);
+                final Source input = fileResolver.resolve(args[i+1], null);
                 final StreamResult output = new StreamResult(out);
 
                 final Transformer transformer = TransformerFactory.newInstance().newTransformer(stylesheet);
+
+                for (Map.Entry<String, String> parameter : parameters.entrySet())
+                    transformer.setParameter(parameter.getKey(), parameter.getValue());
+
                 transformer.transform(input, output);
             } catch (TransformerException e) {
                 e.printStackTrace();

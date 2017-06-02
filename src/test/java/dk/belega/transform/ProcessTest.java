@@ -30,7 +30,10 @@ public class ProcessTest {
     @Before
     public void setUp() {
         out = new StringWriter();
+
         process = new Process(new PrintWriter(out));
+        process.setFileResolver(this::resourceResolver);
+        process.setStylesheetResolver(this::resourceResolver);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,12 +55,6 @@ public class ProcessTest {
 
         final String EXPECTED_RESULT = "simple.xml";
 
-        // Given an XML document resolver
-        process.setFileResolver(this::resourceResolver);
-
-        // And an identity XSLT
-        process.setStylesheetResolver(this::resourceResolver);
-
         // When transforming an XML document using an identify stylesheet
         process.run(new String[]{
                 "identity.xsl",
@@ -68,6 +65,30 @@ public class ProcessTest {
         expect(out.toString())
                 .equalTo(resourceAsString(EXPECTED_RESULT));
     }
+
+    @Test
+    public void testParameter() {
+
+        final String EXPECTED_VALUE = "some-value";
+        final String OTHER_VALUE = "other-value";
+
+        // When passing a parameter to the processor
+        process.run(new String[] {
+                "-p",
+                "some-parameter",
+                EXPECTED_VALUE,
+                "--param",
+                "other-parameter",
+                OTHER_VALUE,
+                "parameter.xsl",
+                "simple.xml"
+        });
+
+        // Then the parameter is passed to the XSLT
+        expect(out.toString())
+                .equalTo(EXPECTED_VALUE + OTHER_VALUE);
+    }
+
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Implementation
