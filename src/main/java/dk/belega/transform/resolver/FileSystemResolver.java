@@ -12,9 +12,28 @@ public class FileSystemResolver implements URIResolver {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Types, constants
 
+    static final String SYSTEM_ID_PREFIX = "file://";
+
     static class VFS {
+
         InputStream open(String path) throws FileNotFoundException {
             return new FileInputStream(path);
+        }
+
+        String cwd() {
+            return new File("").getAbsolutePath();
+        }
+
+        boolean isAbsolute(String path) {
+            return new File(path).isAbsolute();
+        }
+
+        String dirname(String path) {
+            return new File(path).getParent();
+        }
+
+        String join(String path, String file) {
+            return new File(new File(path), file).getPath();
         }
     }
 
@@ -52,10 +71,22 @@ public class FileSystemResolver implements URIResolver {
     @Override
     public Source resolve(String href, String base) throws TransformerException {
         try {
-            return new StreamSource(vfs.open(href));
+            if (null != base && !base.startsWith(SYSTEM_ID_PREFIX))
+                return null;
+
+            final String path;
+            if (vfs.isAbsolute(href))
+                path = href;
+            else if (null != base) {
+                base = base.substring(SYSTEM_ID_PREFIX.length());
+                final String parent = vfs.dirname(base);
+                path = vfs.join(parent, href);
+            } else
+                path = vfs.join(vfs.cwd(), href);
+
+            return new StreamSource(vfs.open(path), SYSTEM_ID_PREFIX + path);
         } catch (FileNotFoundException e) {
-            final String cwd = new File("").getAbsolutePath();
-            throw new TransformerException("from " + cwd, e);
+            throw new TransformerException("from " + vfs.cwd(), e);
         }
     }
 }

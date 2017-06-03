@@ -127,12 +127,37 @@ public class ProcessTest {
                 .equalTo(EXPECTED_RESULT);
     }
 
+    @Test
+    public void testSubFolderInclude() {
+
+        final String EXPECTED_RESULT = "Sub-folder include";
+
+        process.run(new String[] {
+                "-p",
+                "expected-param",
+                EXPECTED_RESULT,
+                "sub/major.xsl",
+                "simple.xml"
+        });
+
+        expect(out.toString())
+                .equalTo(EXPECTED_RESULT);
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Implementation
 
     @SuppressWarnings("unused")
     private Source resourceResolver(String href, String base) {
-        return new StreamSource(getClass().getResourceAsStream(href));
+
+        final String path;
+        if (href.startsWith("/"))
+            path = href;
+        else if (null != base)
+            path =  base.replaceAll("jar://", "").replaceAll("/[^/]*$", "/" + href);
+        else
+            path = getClass().getPackage().getName().replaceAll("^|$|\\.", "/") + href;
+        return new StreamSource(getClass().getResourceAsStream(path), "jar://" + path);
     }
 
     private String resourceAsString(String href) {
